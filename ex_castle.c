@@ -76,11 +76,12 @@ void drawWalls(float dis_center, float thick, float height){
 
 void drawTowers(float dis_center, float radius){
     struct Vector3f v;
+    struct Vector4f r = {0, 0, 0, 0};
     for (int i=-1;i<2;i+=2){
         for(int j=-1;j<2;j+=2){
             // Draw cylinders
             v = createVector3f(dis_center*i, 0, dis_center*j);
-            drawCylinder(v, radius, dis_center, 20, 20, color_wall);
+            drawCylinder(v, r, radius, dis_center, 20, 20, color_wall);
 
             // Draw roofs
             v = createVector3f(dis_center*i, dis_center, dis_center*j);
