@@ -21,21 +21,23 @@ void drawTorso(float height, float radius, float length){
 }
 
 void drawArms(float height, float radius, float length){
+    length /= 2;
     struct Vector3f v = {-0.8-radius, height, 0};
     struct Vector4f r = {90.0, createVector3f(1.0, 0.0, 0.0)};
-    drawCylinder(v, r, radius, length / 2, 15, 15, skc);
+    drawCylinder(v, r, radius, length, 15, 15, skc);
 
     v = createVector3f(0.8+radius, height, 0);
-    drawCylinder(v, r, radius, length / 2, 15, 15, skc);
+    drawCylinder(v, r, radius, length, 15, 15, skc);
 
     v = createVector3f(-0.8-radius, height-length/2, 0);
-    drawCylinder(v, r, radius, length / 2, 15, 15, skc);
+    drawCylinder(v, r, radius, length, 15, 15, skc);
 
     v = createVector3f(0.8+radius, height-length/2, 0);
-    drawCylinder(v, r, radius, length / 2, 15, 15, skc);
+    drawCylinder(v, r, radius, length, 15, 15, skc);
 }
 
 void drawLegs(float height, float radius, float length){
+    length /= 2;
     struct Vector3f v = {-radius, height, 0};
     struct Vector4f r = {90.0, createVector3f(1.0, 0.0, 0.0)};
     drawCylinder(v, r, radius, length, 15, 15, skc);
@@ -70,7 +72,7 @@ void display() {
     float arm_len = torso_len;
 
     float leg_hei = torso_hei;
-    float leg_len = 2;
+    float leg_len = arm_len;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
     glLoadIdentity();
