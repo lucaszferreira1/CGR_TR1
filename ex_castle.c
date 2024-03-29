@@ -85,7 +85,7 @@ void drawTowers(float dis_center, float radius){
 
             // Draw roofs
             v = createVector3f(dis_center*i, dis_center, dis_center*j);
-            drawCone(v, radius + (radius / 15), 2, 20, 20, color_roof);
+            drawCone(v, r, radius + (radius / 15), 2, 20, 20, color_roof);
         }
     }
 }
