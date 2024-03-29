@@ -5,7 +5,7 @@
 // gcc ex_robot.c shapes.c -o robot -lGL -lGLU -lglut
 // ./robot
 
-float center = 7.5;
+float center = 8;
 
 struct Color skc = {1.0, 1.0, 1.0};
 
@@ -63,10 +63,10 @@ void drawFeet(){
 }
 
 void display() {
-    float head_hei = 8;
+    float head_hei = center;
 
-    float torso_hei = 3;
-    float torso_len = 4;
+    float torso_hei = center / 8 * 3;
+    float torso_len = head_hei / 2;
 
     float arm_hei = torso_hei + torso_len;
     float arm_len = torso_len;
@@ -76,7 +76,7 @@ void display() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
     glLoadIdentity();
-    gluLookAt((center*2), (center*2), (center*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
+    gluLookAt((center*2), (center*2)+head_hei, (center*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
 
     drawHead(head_hei, 1.0);
     drawTorso(torso_hei, 0.8, torso_len);
