@@ -1,89 +1,95 @@
 #include "shapes.h"
 #include <GL/glut.h>
 #include <GL/glu.h>
+#include <stdio.h>
 
 // gcc ex_robot.c shapes.c -o robot -lGL -lGLU -lglut
 // ./robot
 
 float center = 8;
+struct Color skin_c = {1.0, 1.0, 1.0};
+struct Color joint_c = {0.8, 0.8, 0.8};
 
-struct Color skc = {1.0, 1.0, 1.0};
+struct Limb{
+    float length, radius;
+    struct Vector3f v;
+    struct Vector4f r1, r2;
+};
+struct Limb createLimb(struct Vector3f v, float length, float radius){
+    struct Limb l;
+    l.v = v;
+    l.length = length / 2;
+    l.radius = radius;
+    l.r1 = createVector4f(90.0, 1.0, 0.0, 0.0);
+    l.r2 = createVector4f(90.0, 1.0, 0.0, 0.0);
+    return l;
+}
+void drawLimb(struct Limb l){
+    struct Vector3f v = l.v;
+    drawCylinder(v, l.r1, l.radius, l.length, 15, 15, skin_c);
+    // Top Joint
+    drawSphere(v, l.radius-0.01, 15, 15, joint_c);
+
+    v.y -= l.length;
+    drawCylinder(v, l.r2, l.radius, l.length, 15, 15, skin_c);
+    // Bottom Joint
+    drawSphere(v, l.radius-0.01, 15, 15, joint_c);
+
+    // Hand / Feet
+    v.y -= l.length;
+    drawSphere(v, l.radius-0.01, 15, 15, joint_c);
+}
 
 void drawHead(float height, float radius){
     struct Vector3f v = {0, height, 0};
-    drawSphere(v, radius, 30, 30, skc);
+    drawSphere(v, radius, 30, 30, skin_c);
 }
 
 void drawTorso(float height, float radius, float length){
     struct Vector3f v = {0, height, 0};
     struct Vector4f r = {0, 0, 0, 0};
-    drawCylinder(v, r, radius, length, 30, 30, skc);
-}
-
-void drawArms(float height, float radius, float length){
-    length /= 2;
-    struct Vector3f v = {-0.8-radius, height, 0};
-    struct Vector4f r = {90.0, createVector3f(1.0, 0.0, 0.0)};
-    drawCylinder(v, r, radius, length, 15, 15, skc);
-
-    v = createVector3f(0.8+radius, height, 0);
-    drawCylinder(v, r, radius, length, 15, 15, skc);
-
-    v = createVector3f(-0.8-radius, height-length/2, 0);
-    drawCylinder(v, r, radius, length, 15, 15, skc);
-
-    v = createVector3f(0.8+radius, height-length/2, 0);
-    drawCylinder(v, r, radius, length, 15, 15, skc);
-}
-
-void drawLegs(float height, float radius, float length){
-    length /= 2;
-    struct Vector3f v = {-radius, height, 0};
-    struct Vector4f r = {90.0, createVector3f(1.0, 0.0, 0.0)};
-    drawCylinder(v, r, radius, length, 15, 15, skc);
-
-    v = createVector3f(radius, height, 0);
-    drawCylinder(v, r, radius, length, 15, 15, skc);
-
-    v = createVector3f(-radius, height-length, 0);
-    drawCylinder(v, r, radius, length, 15, 15, skc);
-
-    v = createVector3f(radius, height-length, 0);
-    drawCylinder(v, r, radius, length, 15, 15, skc);
-}
-
-void drawFeet(){
-    // struct Vector3f v1 = {-0.4, -0.2, 0.0};
-    // struct Vector3f v2 = {0.4, 0.0, 1.0};
-    // drawBox(v1, v2, skc);
-
-    // v1 = createVector3f(-0.5, 0, 0);
-    // v2 = createVector3f(-0.5, 0, 1);
-    // drawBox(v1, v2, skc);
+    drawCylinder(v, r, radius, length, 30, 30, skin_c);
+    // Bottom Joint
+    drawSphere(v, radius-0.01, 15, 15, joint_c);
+    // Top Joint
+    v.y += length;
+    drawSphere(v, radius-0.01, 15, 15, joint_c);
 }
 
 void display() {
+    float head_rad = (center / 10) * 1.25;
     float head_hei = center;
 
+    float torso_rad = center / 10;
     float torso_hei = center / 8 * 3;
     float torso_len = head_hei / 2;
 
+    float arm_rad = torso_rad / 2;
     float arm_hei = torso_hei + torso_len;
     float arm_len = torso_len;
 
-    float leg_hei = torso_hei;
+    float leg_rad = arm_rad;
+    float leg_hei = torso_hei - torso_rad;
     float leg_len = arm_len;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
     glLoadIdentity();
     gluLookAt((center*2), (center*2)+head_hei, (center*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
 
-    drawHead(head_hei, 1.0);
-    drawTorso(torso_hei, 0.8, torso_len);
-    drawArms(arm_hei, 0.4, arm_len);
-    drawLegs(leg_hei, 0.4, leg_len);
-    drawFeet();
+    drawHead(head_hei, head_rad);
+    drawTorso(torso_hei, torso_rad, torso_len);
 
+    struct Limb rArm = createLimb(createVector3f(-3 * arm_rad, arm_hei, 0), arm_len, arm_rad);
+    struct Limb lArm = createLimb(createVector3f(3 * arm_rad, arm_hei, 0), arm_len, arm_rad);
+
+    struct Limb rLeg = createLimb(createVector3f(-leg_rad, leg_hei, 0), leg_len, leg_rad);
+    struct Limb lLeg = createLimb(createVector3f(leg_rad, leg_hei, 0), leg_len, leg_rad);
+
+    struct Limb limbs[] = {rArm, lArm, rLeg, lLeg};
+
+    for (int i=0;i<4;i++)
+        drawLimb(limbs[i]);
+    
     glFlush();
     glutSwapBuffers(); // Use double buffering to avoid flickering
 }
