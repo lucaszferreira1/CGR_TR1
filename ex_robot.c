@@ -2,13 +2,20 @@
 #include <GL/glut.h>
 #include <GL/glu.h>
 #include <stdio.h>
+#include <math.h>
 
-// gcc ex_robot.c shapes.c -o robot -lGL -lGLU -lglut
+#define PI 3.1415
+
+// gcc ex_robot.c shapes.c -o robot -lGL -lGLU -lglut -lm
 // ./robot
 
 float center = 8;
 struct Color skin_c = {1.0, 1.0, 1.0};
 struct Color joint_c = {0.8, 0.8, 0.8};
+
+float radians(float degree){
+    return degree * PI / 180;
+}
 
 struct Limb{
     float length, radius;
@@ -30,13 +37,23 @@ void drawLimb(struct Limb l){
     // Top Joint
     drawSphere(v, l.radius-0.01, 15, 15, joint_c);
 
-    v.y -= l.length;
+    // Calculate the position relative to the rotation of the upper arm
+    float angle = radians(180 - l.r1.r);
+    float sumrs = l.r1.v.x + l.r1.v.y + l.r1.v.z;
+    struct Vector3f vAngles = {l.r1.v.x / sumrs * angle, l.r1.v.y / sumrs * angle, l.r1.v.z / sumrs * angle};
+    float coY = sin(angle) * l.length;
+    v.y -= cos(vAngles.y) * l.length;
+    v.x += cos(vAngles.x) * coY;
+    v.z += sin(vAngles.z) * coY;
     drawCylinder(v, l.r2, l.radius, l.length, 15, 15, skin_c);
     // Bottom Joint
     drawSphere(v, l.radius-0.01, 15, 15, joint_c);
-
+    
     // Hand / Feet
-    v.y -= l.length;
+    angle = radians(180 - l.r1.r);
+    
+    v.y -= sin(angle) * l.length;
+    v.z -= cos(angle) * l.length;
     drawSphere(v, l.radius-0.01, 15, 15, joint_c);
 }
 
