@@ -201,6 +201,14 @@ void drawSphere(struct Vector3f v1, float radius, int slices, int stacks, struct
     glPopMatrix();
 }
 
+struct Particle createParticle(struct Vector3f pos, struct Vector3f vel, struct Vector3f col, float lifetime){
+    struct Particle p;
+    p.pos = pos;
+    p.vel = vel;
+    p.col = col;
+    p.lifetime = lifetime;
+    return p;
+}
 void updateParticle(struct Particle p, float g){
     p.pos.y -= g;
     p.pos.x += p.vel.x;
@@ -208,14 +216,12 @@ void updateParticle(struct Particle p, float g){
     p.pos.z += p.vel.z;
     p.lifetime--;
 }
-
 void drawParticle(struct Particle p){
     glColor3f(p.col);
     glBegin(GL_POINT);
     glVertex3f(p.pos.x, p.pos.y, p.pos.z);
     glEnd();
 }
-
 void drawParticles(struct Particle p[], int n_p, float g){
     for (int i=0;i<n_p;i++){
         updateParticle(p[i], g);
