@@ -217,7 +217,7 @@ void updateParticle(struct Particle p, float g){
     p.lifetime--;
 }
 void drawParticle(struct Particle p){
-    glColor3f(p.col);
+    glColor3f(p.col.x, p.col.y, p.col.z);
     glBegin(GL_POINT);
     glVertex3f(p.pos.x, p.pos.y, p.pos.z);
     glEnd();
