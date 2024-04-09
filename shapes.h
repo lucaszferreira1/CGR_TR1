@@ -28,6 +28,7 @@ void drawCone(struct Vector3f v1, struct Vector4f r, float radius, float height,
 void drawCylinder(struct Vector3f v1, struct Vector4f r, float radius, float height, int slices, int stacks, struct Color c);
 void drawSphere(struct Vector3f v1, float radius, int slices, int stacks, struct Color);
 
+struct Particle createParticle(struct Vector3f pos, struct Vector3f vel, struct Vector3f col, float lifetime);
 void updateParticle(struct Particle p, float g);
 void drawParticle(struct Particle p);
 void drawParticles(struct Particle p[], int n_p, float g);
