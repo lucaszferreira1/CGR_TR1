@@ -200,3 +200,25 @@ void drawSphere(struct Vector3f v1, float radius, int slices, int stacks, struct
     glutSolidSphere(radius, slices, stacks);
     glPopMatrix();
 }
+
+void updateParticle(struct Particle p, float g){
+    p.pos.y -= g;
+    p.pos.x += p.vel.x;
+    p.pos.y += p.vel.y;
+    p.pos.z += p.vel.z;
+    p.lifetime--;
+}
+
+void drawParticle(struct Particle p){
+    glColor3f(p.col);
+    glBegin(GL_POINT);
+    glVertex3f(p.pos.x, p.pos.y, p.pos.z);
+    glEnd();
+}
+
+void drawParticles(struct Particle p[], int n_p, float g){
+    for (int i=0;i<n_p;i++){
+        updateParticle(p[i], g);
+        drawParticle(p[i]);
+    }
+}
