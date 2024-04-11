@@ -24,8 +24,8 @@ int vector4fIsEmpty(struct Vector4f v);
 void drawBox(struct Vector3f v1, struct Vector3f v2, struct Color c);
 void drawPyramid(struct Vector3f v1, struct Vector3f v2, struct Color c);
 void drawPrism(struct Vector3f v1, struct Vector3f v2, struct Color c);
-void drawCone(struct Vector3f v1, float r[3], float radius, float height, int slices, int stacks, struct Color c);
-void drawCylinder(struct Vector3f v1, float r[3], float radius, float height, int slices, int stacks, struct Color c);
+void drawCone(struct Vector3f v1, struct Vector3f r, float radius, float height, int slices, int stacks, struct Color c);
+void drawCylinder(struct Vector3f v1, struct Vector3f r, float radius, float height, int slices, int stacks, struct Color c);
 void drawSphere(struct Vector3f v1, float radius, int slices, int stacks, struct Color);
 
 struct Particle createParticle(struct Vector3f pos, struct Vector3f vel, struct Vector3f col, float lifetime);
