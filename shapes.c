@@ -7,7 +7,9 @@ struct Vector3f createVector3f(float x, float y, float z){
     return v;
 }
 struct Vector4f createVector4f(float r, float x, float y, float z){
-    struct Vector4f v = {r, createVector3f(x, y, z)};
+    struct Vector4f v;
+    v.r = r;
+    v.v = createVector3f(x, y, z);
     return v;
 }
 int vector3fIsEmpty(struct Vector3f v){
@@ -169,27 +171,33 @@ void drawPrism(struct Vector3f v1, struct Vector3f v2, struct Color c) {
     glVertex3f(v2.x, v1.y, v2.z);
     glEnd();
 }
-void drawCylinder(struct Vector3f v1, struct Vector4f r, float radius, float height, int slices, int stacks, struct Color c) {
+void drawCylinder(struct Vector3f v1, float r[3], float radius, float height, int slices, int stacks, struct Color c) {
     glColor3f(c.r, c.g, c.b);
     glPushMatrix();
     glTranslatef(v1.x, v1.y, v1.z);
-    if (vector4fIsEmpty(r))
+    if (r[0] == 0 && r[1] == 0 && r[2] == 0)
         glRotatef(270.0, 1.0, 0.0, 0.0);
-    else
-        glRotatef(r.r, r.v.x, r.v.y, r.v.z);
+    else{
+        glRotatef(r[0], 1, 0, 0);
+        glRotatef(r[1], 0, 1, 0);
+        glRotatef(r[2], 0, 0, 1);
+    }
     GLUquadric* quad = gluNewQuadric();
     gluCylinder(quad, radius, radius, height, slices, stacks);
     gluDeleteQuadric(quad);
     glPopMatrix();
 }
-void drawCone(struct Vector3f v1, struct Vector4f r, float radius, float height, int slices, int stacks, struct Color c){
+void drawCone(struct Vector3f v1, float r[3], float radius, float height, int slices, int stacks, struct Color c){
     glColor3f(c.r, c.g, c.b);
     glPushMatrix();
     glTranslatef(v1.x, v1.y, v1.z);
-    if (vector4fIsEmpty(r))
+    if (r[0] == 0 && r[1] == 0 && r[2] == 0)
         glRotatef(270.0, 1.0, 0.0, 0.0);
-    else
-        glRotatef(r.r, r.v.x, r.v.y, r.v.z);
+    else{
+        glRotatef(r[0], 1, 0, 0);
+        glRotatef(r[1], 0, 1, 0);
+        glRotatef(r[2], 0, 0, 1);
+    }
     glutSolidCone(radius, height, slices, stacks);
     glPopMatrix();
 }
