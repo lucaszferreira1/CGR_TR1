@@ -26,7 +26,7 @@ void drawHead(float height, float radius){
 
     // Nose
     v = createVector3f(0, height, radius);
-    struct Vector4f r = createVector4f(0, 1, 0, 0);
+    float r[] = {360, 0, 0};
     drawCone(v, r, 0.5, 2, 15, 15, color_orange);
 }
 void drawBody(float height, float radius){
@@ -47,16 +47,16 @@ void drawBody(float height, float radius){
 }
 void drawArms(float x, float height, float radius, float length){
     struct Vector3f v = {x, height, 0};
-    struct Vector4f r = {90.0, createVector3f(0.0, 1.0, 0.0)};
+    float r[3] = {0.0, 90.0, 0.0};
     drawCylinder(v, r, radius, length, 15, 15, color_black);
 
     v = createVector3f(-x, height, 0);
-    r.r = -90;
+    r[1] = -90;
     drawCylinder(v, r, radius, length, 15, 15, color_black);
 }
 void drawScarf(float height, float radius, float length){
     struct Vector3f v = {0, height, 0};
-    struct Vector4f r = {0, 0, 0, 0};
+    float r[] = {0, 0, 0};
     drawCylinder(v, r, radius, length, 15, 15, color_red);
 }
 void display() {
