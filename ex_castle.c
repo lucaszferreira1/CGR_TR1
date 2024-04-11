@@ -76,7 +76,7 @@ void drawWalls(float dis_center, float thick, float height){
 
 void drawTowers(float dis_center, float radius){
     struct Vector3f v;
-    struct Vector4f r = {0, 0, 0, 0};
+    float r[] = {0, 0, 0};
     for (int i=-1;i<2;i+=2){
         for(int j=-1;j<2;j+=2){
             // Draw cylinders
