@@ -1,3 +1,1 @@
-- Remover vector3fIsEmpty das funções de drawCylinder e drawCone (shapes.c), trocar nos arquivos com erro por {270, 0, 0};
 - Consertar função drawLimb no ex_robot.c;
-- 
