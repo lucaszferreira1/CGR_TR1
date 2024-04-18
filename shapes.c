@@ -175,13 +175,10 @@ void drawCylinder(struct Vector3f v1, struct Vector3f r, float radius, float hei
     glColor3f(c.r, c.g, c.b);
     glPushMatrix();
     glTranslatef(v1.x, v1.y, v1.z);
-    if (vector3fIsEmpty(r))
-        glRotatef(270.0, 1.0, 0.0, 0.0);
-    else{
-        glRotatef(r.x, 1, 0, 0);
-        glRotatef(r.y, 0, 1, 0);
-        glRotatef(r.z, 0, 0, 1);
-    }
+    glRotatef(r.x, 1, 0, 0);
+    glRotatef(r.y, 0, 1, 0);
+    glRotatef(r.z, 0, 0, 1);
+
     GLUquadric* quad = gluNewQuadric();
     gluCylinder(quad, radius, radius, height, slices, stacks);
     gluDeleteQuadric(quad);
@@ -191,13 +188,10 @@ void drawCone(struct Vector3f v1, struct Vector3f r, float radius, float height,
     glColor3f(c.r, c.g, c.b);
     glPushMatrix();
     glTranslatef(v1.x, v1.y, v1.z);
-    if (vector3fIsEmpty(r))
-        glRotatef(270.0, 1.0, 0.0, 0.0);
-    else{
-        glRotatef(r.x, 1, 0, 0);
-        glRotatef(r.y, 0, 1, 0);
-        glRotatef(r.z, 0, 0, 1);
-    }
+    glRotatef(r.x, 1, 0, 0);
+    glRotatef(r.y, 0, 1, 0);
+    glRotatef(r.z, 0, 0, 1);
+    
     glutSolidCone(radius, height, slices, stacks);
     glPopMatrix();
 }
