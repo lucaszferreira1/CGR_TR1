@@ -19,16 +19,15 @@ float radians(float degree){
 
 struct Limb{
     float length, radius;
-    struct Vector3f v;
-    struct Vector4f r1, r2;
+    struct Vector3f v, r1, r2;
 };
 struct Limb createLimb(struct Vector3f v, float length, float radius){
     struct Limb l;
     l.v = v;
     l.length = length / 2;
     l.radius = radius;
-    l.r1 = createVector4f(90.0, 1.0, 0.0, 0.0);
-    l.r2 = createVector4f(90.0, 1.0, 0.0, 0.0);
+    l.r1 = createVector3f(90.0, 0.0, 0.0);
+    l.r2 = createVector3f(90.0, 0.0, 0.0);
     return l;
 }
 void drawLimb(struct Limb l){
@@ -38,22 +37,16 @@ void drawLimb(struct Limb l){
     drawSphere(v, l.radius-0.01, 15, 15, joint_c);
 
     // Calculate the position relative to the rotation of the upper arm
-    float angle = radians(180 - l.r1.r);
-    float sumrs = l.r1.v.x + l.r1.v.y + l.r1.v.z;
-    struct Vector3f vAngles = {l.r1.v.x / sumrs * angle, l.r1.v.y / sumrs * angle, l.r1.v.z / sumrs * angle};
-    float coY = sin(angle) * l.length;
-    v.y -= cos(vAngles.y) * l.length;
-    v.x += cos(vAngles.x) * coY;
-    v.z += sin(vAngles.z) * coY;
+
+    v.y += cos(radians(l.r1.z)) * l.length - sin(radians(l.r1.x)) * l.length;
+    v.x += sin(radians(l.r1.y)) * l.length + sin(radians(l.r1.z)) * l.length;
+    // v.z -= sin(radians(l.r1.z)) * l.length;
+
     drawCylinder(v, l.r2, l.radius, l.length, 15, 15, skin_c);
     // Bottom Joint
     drawSphere(v, l.radius-0.01, 15, 15, joint_c);
     
     // Hand / Feet
-    angle = radians(180 - l.r1.r);
-    
-    v.y -= sin(angle) * l.length;
-    v.z -= cos(angle) * l.length;
     drawSphere(v, l.radius-0.01, 15, 15, joint_c);
 }
 
@@ -64,7 +57,7 @@ void drawHead(float height, float radius){
 
 void drawTorso(float height, float radius, float length){
     struct Vector3f v = {0, height, 0};
-    struct Vector4f r = {0, 0, 0, 0};
+    struct Vector3f r = {270, 0, 0};
     drawCylinder(v, r, radius, length, 30, 30, skin_c);
     // Bottom Joint
     drawSphere(v, radius-0.01, 15, 15, joint_c);
