@@ -56,7 +56,7 @@ void drawArms(float x, float height, float radius, float length){
 }
 void drawScarf(float height, float radius, float length){
     struct Vector3f v = {0, height, 0};
-    struct Vector3f r = {0, 0, 0};
+    struct Vector3f r = {270, 0, 0};
     drawCylinder(v, r, radius, length, 15, 15, color_red);
 }
 void display() {
