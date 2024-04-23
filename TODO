@@ -1,1 +1,8 @@
-- Consertar função drawLimb no ex_robot.c;
+- Mudar col da Particle para Vector4f, para ter um canal alpha
+- Adicionar size em Particle e em drawParticle() {glPointSize(p.size);}
+- Adicionar blend antes de renderizar um grupo de Particle,
+Antes:
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+Depois:
+    glDisable(GL_BLEND);
