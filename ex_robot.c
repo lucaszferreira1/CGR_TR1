@@ -15,8 +15,15 @@ Color joint_c = {0.8, 0.8, 0.8, 0.0};
 Vector3f arms_rot[2][2] = {{{45.0, 0.0, 0.0}, {270.0, 0.0, 0.0}}, {{135.0, 0.0, 0.0}, {90.0, 0.0, 0.0}}};
 Vector3f legs_rot[2][2] = {{{75.0, 0.0, 0.0}, {75.0, 0.0, 0.0}}, {{105.0, 0.0, 0.0}, {160.0, 0.0, 0.0}}};
 
+int x = 0;
+
 float radians(float degree){
     return degree * PI / 180;
+}
+
+float eqRun(float min, float max, float period){
+    float res = ((max - min) / 2) * sin((2 * PI * x) / period) + ((min + max) / 2);
+    return res;
 }
 
 struct Limb{
@@ -112,7 +119,27 @@ void display() {
 }
 
 void update(){
-    // Function where the animations will take place
+    float res = eqRun(75, 105, 200);
+    legs_rot[0][0].x = res;
+    res = eqRun(75, 160, 200);
+    legs_rot[0][1].x = res;
+
+    res = eqRun(105, 75, 200);
+    legs_rot[1][0].x = res;
+    res = eqRun(160, 75, 200);
+    legs_rot[1][1].x = res;
+
+    res = eqRun(45, 135, 200);
+    arms_rot[0][0].x = res;
+    res = eqRun(-90, 90, 200);
+    arms_rot[0][1].x = res;
+
+    res = eqRun(135, 45, 200);
+    arms_rot[1][0].x = res;
+    res = eqRun(90, -90, 200);
+    arms_rot[1][1].x = res;
+
+    x++;
 }
 
 void init() {
