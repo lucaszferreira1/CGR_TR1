@@ -3,20 +3,38 @@
 #include <GL/glut.h>
 #include <GL/glu.h>
 #include <unistd.h>
+#include <time.h>
 #define CENTER 8.0
 #define G 0.0003
-#define N_P 2500
+#define N_P 100
 
 // gcc ex_particle.c shapes.c particle.c -o particle -lGL -lGLU -lglut -lm
 // ./particle
 
 Color color_sky = {0.675, 0.843, 0.898, 0.0};
 Color color_red = {1.0, 0.0, 0.0, 0.0};
+Color color_orange = {1.0, 0.5, 0.0, 0.0};
 int gen = 1;
 Particle *particles;
 
 void initParticles(){
-    particles = generateParticles(N_P, 10, 1, createVector3f(0.0, 0.0, 0.0), color_red, color_red, 10000, 1);
+    particles = generateParticles(N_P, 10, createVector3f(0.0, 0.0, 0.0), color_red, color_orange, 10000, 5);
+}
+
+void initRainParticles(Vector3f pos, float rad){
+    Particle* ps = (Particle*)malloc(N_P * sizeof(Particle));
+    Color blue = {0.183, 0.336, 0.91, 0.5};
+    Color light_blue = {0.2, 0.8, 1.0, 0.5};
+    for (int i=0;i<N_P;i++){
+        Particle temp;
+        temp.pos = getRandomPointInSphere(pos, rad);
+        temp.lifetime = rand() % 1000;
+        temp.col = getRandomColor(blue, light_blue);
+        temp.vel = createVector3f(0.0, 0.2, 0.0);
+        temp.size = 1;
+        ps[i] = temp;
+    }
+    particles = ps;
 }
 
 void display() {
@@ -24,20 +42,20 @@ void display() {
     glLoadIdentity();
     gluLookAt((CENTER*2), (CENTER*2), (CENTER*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
     if (gen){
-        initParticles();
+        // initParticles();
+        initRainParticles(createVector3f(0.0, 0.0, 0.0), 5);
         gen = 0;
     }
-
-    glBegin(GL_POINTS);
+    Color white = {1.0, 1.0, 1.0, 0.0};
+    drawSphere(createVector3f(0.0, 0.0, 0.0), 5, 30, 30, white);
     drawParticles(particles, N_P, G);
-    glEnd();
-
+    
     glutSwapBuffers(); // Use double buffering to avoid flickering
-    // usleep(1000);
 }
 
 
 void init() {
+    srand(time(NULL));
     glClearColor(color_sky.r, color_sky.g, color_sky.b, 0.0); // Set background color to black
     glEnable(GL_DEPTH_TEST); // Enable depth testing for proper rendering
     glMatrixMode(GL_PROJECTION);

@@ -11,17 +11,33 @@ float radians(float degree){
     return degree * PI / 180;
 }
 Color getRandomColor(Color col1, Color col2){
-    Color randomColor;
-    int col = (int)((col2.r - col1.r) * 256);
-    if (!col) col = 1;
-    randomColor.r = (rand() % col) / 256 + col1.r;
-    col = (int)(col2.g - col1.g) * 256;
-    if (!col) col = 1;
-    randomColor.g = (rand() % col) / 256 + col1.g;
-    col = (int)(col2.b - col1.b) * 256;
-    if (!col) col = 1;
-    randomColor.b = (rand() % col) / 256 + col1.b;
+    Color randomColor = {0.0, 0.0, 0.0, 0.0};
+    int col = (int)((col2.r - col1.r) * 256.0);
+    if (!col) randomColor.r = col2.r;
+    else randomColor.r = (rand() % col) / 256.0 + col1.r;
+    col = (int)((col2.g - col1.g) * 256.0);
+    if (!col) randomColor.g = col2.g;
+    else randomColor.g = (rand() % col) / 256.0 + col1.g;
+    col = (int)((col2.b - col1.b) * 256.0);
+    if (!col) randomColor.b = col2.b;
+    else randomColor.b = (rand() % col) / 256.0 + col1.b;
     return randomColor;
+}
+Vector3f getRandomPointInSphere(Vector3f pos, float radius) {
+    float r = ((float)rand() / RAND_MAX) * radius; // Random radius within the sphere
+    float theta = ((float)rand() / RAND_MAX) * 2 * PI; // Random angle theta (0 to 2*pi)
+    float phi = ((float)rand() / RAND_MAX) * PI; // Random angle phi (0 to pi)
+
+    // Convert spherical coordinates to Cartesian coordinates
+    float px = pos.x + r * sin(phi) * cos(theta);
+    float py = pos.y + r * sin(phi) * sin(theta);
+    float pz = pos.z + r * cos(phi);
+    Vector3f randomPoint;
+    randomPoint.x = px;
+    randomPoint.y = py;
+    randomPoint.z = pz;
+
+    return randomPoint;
 }
 Particle createParticle(Vector3f pos, Vector3f vel, Color col, int lifetime, float size){
     Particle p;
@@ -41,10 +57,11 @@ void updateParticle(Particle *p, float g){
 }
 void drawParticle(Particle p){
     glColor4f(p.col.r, p.col.g, p.col.b, p.col.a);
-    glPointSize(p.size);
     glVertex3f(p.pos.x, p.pos.y, p.pos.z);
 }
 void drawParticles(Particle p[], int n_p, float g){
+    glPointSize(p[0].size);
+    glBegin(GL_POINTS);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     for (int i=0;i<n_p;i++){
@@ -54,6 +71,7 @@ void drawParticles(Particle p[], int n_p, float g){
         }
     }
     glDisable(GL_BLEND);
+    glEnd();
 }
 /* Function which returns an array of particles
 n : number of particles
@@ -65,15 +83,13 @@ col2 : max color for the range of colors (if col2 == col1 all will have the same
 lifetime : lifetime of the particles
 size : of the particles
 */
-Particle* generateParticles(int n, int vel_amp, int size_amp, Vector3f pos, Color col1, Color col2, int lifetime, float size){
-    srand(time(NULL));
+Particle* generateParticles(int n, int vel_amp, Vector3f pos, Color col1, Color col2, int lifetime, float size){
     Particle* particles = (Particle*)malloc(n * sizeof(Particle));
     if (particles == NULL){
         printf("Error allocating memory : generateParticles()");
         exit(1); 
     }
     float velocity;
-    float size_diff, size_ud;
     Vector3f dir;
     for (int i = 0; i < n; i++){
         Particle temp;
@@ -87,12 +103,6 @@ Particle* generateParticles(int n, int vel_amp, int size_amp, Vector3f pos, Colo
         temp.vel.z = velocity * cos(radians(dir.y)) * cos(radians(dir.x));;
         temp.lifetime = rand() % lifetime;
         temp.size = size;
-        size_diff = (rand() % size_amp) / 100;
-        size_ud = rand() % 2;
-        if (size_ud)
-            temp.size -= size_diff;
-        else
-            temp.size += size_diff;
         particles[i] = temp;
     }
 

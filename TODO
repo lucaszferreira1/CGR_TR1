@@ -1,0 +1,1 @@
+- Fix rain particles init, possibly mistake in vel.y
