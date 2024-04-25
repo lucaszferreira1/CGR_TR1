@@ -5,13 +5,15 @@
 #include <math.h>
 
 #define PI 3.1415
+#define CENTER 8.0
 
 // gcc ex_robot.c shapes.c -o robot -lGL -lGLU -lglut -lm
 // ./robot
 
-float center = 8;
 Color skin_c = {1.0, 1.0, 1.0, 0.0};
 Color joint_c = {0.8, 0.8, 0.8, 0.0};
+Vector3f arms_rot[2][2] = {{{45.0, 0.0, 0.0}, {270.0, 0.0, 0.0}}, {{135.0, 0.0, 0.0}, {90.0, 0.0, 0.0}}};
+Vector3f legs_rot[2][2] = {{{75.0, 0.0, 0.0}, {75.0, 0.0, 0.0}}, {{105.0, 0.0, 0.0}, {160.0, 0.0, 0.0}}};
 
 float radians(float degree){
     return degree * PI / 180;
@@ -23,13 +25,13 @@ struct Limb{
 };
 typedef struct Limb Limb;
 
-Limb createLimb(Vector3f v, float length, float radius){
+Limb createLimb(Vector3f v, Vector3f r1, Vector3f r2, float length, float radius){
     Limb l;
     l.v = v;
     l.length = length / 2;
     l.radius = radius;
-    l.r1 = createVector3f(90.0, 45.0, 0.0);
-    l.r2 = createVector3f(90.0, 0.0, 0.0);
+    l.r1 = r1;
+    l.r2 = r2;
     return l;
 }
 void drawLimb(Limb l){
@@ -72,11 +74,11 @@ void drawTorso(float height, float radius, float length){
 }
 
 void display() {
-    float head_rad = (center / 10) * 1.25;
-    float head_hei = center;
+    float head_rad = (CENTER / 10) * 1.25;
+    float head_hei = CENTER;
 
-    float torso_rad = center / 10;
-    float torso_hei = center / 8 * 3;
+    float torso_rad = CENTER / 10;
+    float torso_hei = CENTER / 8 * 3;
     float torso_len = head_hei / 2;
 
     float arm_rad = torso_rad / 2;
@@ -89,19 +91,19 @@ void display() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
     glLoadIdentity();
-    gluLookAt((center*2), (center*2)+head_hei, (center*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
+    gluLookAt((CENTER*2), (CENTER*2)+head_hei, (CENTER*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
 
     drawHead(head_hei, head_rad);
     drawTorso(torso_hei, torso_rad, torso_len);
 
-    Limb rArm = createLimb(createVector3f(-3 * arm_rad, arm_hei, 0), arm_len, arm_rad);
-    Limb lArm = createLimb(createVector3f(3 * arm_rad, arm_hei, 0), arm_len, arm_rad);
+    Limb rArm = createLimb(createVector3f(-3 * arm_rad, arm_hei, 0), arms_rot[0][0], arms_rot[0][1], arm_len, arm_rad);
+    Limb lArm = createLimb(createVector3f(3 * arm_rad, arm_hei, 0), arms_rot[1][0], arms_rot[1][1], arm_len, arm_rad);
 
-    Limb rLeg = createLimb(createVector3f(-leg_rad, leg_hei, 0), leg_len, leg_rad);
-    Limb lLeg = createLimb(createVector3f(leg_rad, leg_hei, 0), leg_len, leg_rad);
+    Limb rLeg = createLimb(createVector3f(-leg_rad, leg_hei, 0), legs_rot[0][0], legs_rot[0][1], leg_len, leg_rad);
+    Limb lLeg = createLimb(createVector3f(leg_rad, leg_hei, 0), legs_rot[1][0], legs_rot[1][1], leg_len, leg_rad);
 
     Limb limbs[] = {rArm, lArm, rLeg, lLeg};
-
+    
     for (int i=0;i<4;i++)
         drawLimb(limbs[i]);
     
@@ -109,6 +111,9 @@ void display() {
     glutSwapBuffers(); // Use double buffering to avoid flickering
 }
 
+void update(){
+    // Function where the animations will take place
+}
 
 void init() {
     glClearColor(0.0, 0.0, 0.0, 0.0); // Set background color to black
@@ -119,7 +124,7 @@ void init() {
     glMatrixMode(GL_MODELVIEW);
 
     // Set light parameters
-    GLfloat light_position[] = {(center), (center), (center), 8}; // Light position (x, y, z, w)
+    GLfloat light_position[] = {(CENTER), (CENTER), (CENTER), 8}; // Light position (x, y, z, w)
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
     // Set material properties
@@ -138,16 +143,34 @@ void init() {
     glEnable(GL_LIGHT0); // Enable light source 0
 }
 
+void reshape(int width, int height) {
+    // Adjust viewport and projection matrix
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45.0, (float)width / (float)height, 1.0, 100.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
+void timer(int value) {
+    // Update the scene and trigger redrawing
+    update();
+    glutPostRedisplay();
+    glutTimerFunc(16, timer, 0); // Schedule the next update after 16 milliseconds (60 FPS)
+}
+
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(500, 500); // Set window size
     glutInitWindowPosition(100, 100); // Set window position
     glutCreateWindow("3D Robot"); // Create a window with the given title
 
     init(); // Initialize OpenGL parameters
+    glutReshapeFunc(reshape);
+    glutTimerFunc(0, timer, 0); // Start the timer
     glutDisplayFunc(display); // Set the display callback function
-
     glutMainLoop(); // Enter the GLUT event processing loop
 
     return 0;
