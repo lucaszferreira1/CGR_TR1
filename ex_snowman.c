@@ -7,15 +7,15 @@
 
 float center = 8;
 
-struct Color color_white = {1.0, 1.0, 1.0};
-struct Color color_black = {0.0, 0.0, 0.0};
-struct Color color_orange = {1.0, 0.344, 0.0};
-struct Color color_red = {1.0, 0.0, 0.0};
-struct Color color_sky = {0.675, 0.843, 0.898};
+Color color_white = {1.0, 1.0, 1.0, 0.0};
+Color color_black = {0.0, 0.0, 0.0, 0.0};
+Color color_orange = {1.0, 0.344, 0.0, 0.0};
+Color color_red = {1.0, 0.0, 0.0, 0.0};
+Color color_sky = {0.675, 0.843, 0.898, 0.0};
 
 void drawHead(float height, float radius){
     // Head
-    struct Vector3f v = {0, height, 0};
+    Vector3f v = {0, height, 0};
     drawSphere(v, radius, 30, 30, color_white);
 
     // Eyes
@@ -26,12 +26,12 @@ void drawHead(float height, float radius){
 
     // Nose
     v = createVector3f(0, height, radius);
-    struct Vector3f r = {360, 0, 0};
+    Vector3f r = {360, 0, 0};
     drawCone(v, r, 0.5, 2, 15, 15, color_orange);
 }
 void drawBody(float height, float radius){
     // Top Body
-    struct Vector3f v = {0, height, 0};
+    Vector3f v = {0, height, 0};
     drawSphere(v, radius, 30, 30, color_white);
     // Bottom Body
     v.y = height * 8;
@@ -46,8 +46,8 @@ void drawBody(float height, float radius){
     drawSphere(v, 0.2, 15, 15, color_black);
 }
 void drawArms(float x, float height, float radius, float length){
-    struct Vector3f v = {x, height, 0};
-    struct Vector3f r = {0.0, 90.0, 0.0};
+    Vector3f v = {x, height, 0};
+    Vector3f r = {0.0, 90.0, 0.0};
     drawCylinder(v, r, radius, length, 15, 15, color_black);
 
     v = createVector3f(-x, height, 0);
@@ -55,8 +55,8 @@ void drawArms(float x, float height, float radius, float length){
     drawCylinder(v, r, radius, length, 15, 15, color_black);
 }
 void drawScarf(float height, float radius, float length){
-    struct Vector3f v = {0, height, 0};
-    struct Vector3f r = {270, 0, 0};
+    Vector3f v = {0, height, 0};
+    Vector3f r = {270, 0, 0};
     drawCylinder(v, r, radius, length, 15, 15, color_red);
 }
 void display() {

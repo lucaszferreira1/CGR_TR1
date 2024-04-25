@@ -10,8 +10,8 @@
 // ./robot
 
 float center = 8;
-struct Color skin_c = {1.0, 1.0, 1.0};
-struct Color joint_c = {0.8, 0.8, 0.8};
+Color skin_c = {1.0, 1.0, 1.0, 0.0};
+Color joint_c = {0.8, 0.8, 0.8, 0.0};
 
 float radians(float degree){
     return degree * PI / 180;
@@ -19,10 +19,12 @@ float radians(float degree){
 
 struct Limb{
     float length, radius;
-    struct Vector3f v, r1, r2;
+    Vector3f v, r1, r2;
 };
-struct Limb createLimb(struct Vector3f v, float length, float radius){
-    struct Limb l;
+typedef struct Limb Limb;
+
+Limb createLimb(Vector3f v, float length, float radius){
+    Limb l;
     l.v = v;
     l.length = length / 2;
     l.radius = radius;
@@ -30,8 +32,8 @@ struct Limb createLimb(struct Vector3f v, float length, float radius){
     l.r2 = createVector3f(90.0, 0.0, 0.0);
     return l;
 }
-void drawLimb(struct Limb l){
-    struct Vector3f v = l.v;
+void drawLimb(Limb l){
+    Vector3f v = l.v;
     drawCylinder(v, l.r1, l.radius, l.length, 15, 15, skin_c);
     // Top Joint
     drawSphere(v, l.radius-0.01, 15, 15, joint_c);
@@ -54,13 +56,13 @@ void drawLimb(struct Limb l){
 }
 
 void drawHead(float height, float radius){
-    struct Vector3f v = {0, height, 0};
+    Vector3f v = {0, height, 0};
     drawSphere(v, radius, 30, 30, skin_c);
 }
 
 void drawTorso(float height, float radius, float length){
-    struct Vector3f v = {0, height, 0};
-    struct Vector3f r = {270, 0, 0};
+    Vector3f v = {0, height, 0};
+    Vector3f r = {270, 0, 0};
     drawCylinder(v, r, radius, length, 30, 30, skin_c);
     // Bottom Joint
     drawSphere(v, radius-0.01, 15, 15, joint_c);
@@ -92,13 +94,13 @@ void display() {
     drawHead(head_hei, head_rad);
     drawTorso(torso_hei, torso_rad, torso_len);
 
-    struct Limb rArm = createLimb(createVector3f(-3 * arm_rad, arm_hei, 0), arm_len, arm_rad);
-    struct Limb lArm = createLimb(createVector3f(3 * arm_rad, arm_hei, 0), arm_len, arm_rad);
+    Limb rArm = createLimb(createVector3f(-3 * arm_rad, arm_hei, 0), arm_len, arm_rad);
+    Limb lArm = createLimb(createVector3f(3 * arm_rad, arm_hei, 0), arm_len, arm_rad);
 
-    struct Limb rLeg = createLimb(createVector3f(-leg_rad, leg_hei, 0), leg_len, leg_rad);
-    struct Limb lLeg = createLimb(createVector3f(leg_rad, leg_hei, 0), leg_len, leg_rad);
+    Limb rLeg = createLimb(createVector3f(-leg_rad, leg_hei, 0), leg_len, leg_rad);
+    Limb lLeg = createLimb(createVector3f(leg_rad, leg_hei, 0), leg_len, leg_rad);
 
-    struct Limb limbs[] = {rArm, lArm, rLeg, lLeg};
+    Limb limbs[] = {rArm, lArm, rLeg, lLeg};
 
     for (int i=0;i<4;i++)
         drawLimb(limbs[i]);

@@ -6,28 +6,28 @@
 // ./castle
 
 float center = 7.5;
-struct Color color_wall = {0.961, 0.627, 0.482};
-struct Color color_roof = {0.867, 0.533, 0.388};
+Color color_wall = {0.961, 0.627, 0.482, 0.0};
+Color color_roof = {0.867, 0.533, 0.388, 0.0};
 
 void drawFloor(float dis_center){
-    struct Vector3f v1;
-    struct Vector3f v2;
+    Vector3f v1;
+    Vector3f v2;
     // Floor
-    struct Color color_white = {1.0, 1.0, 1.0};
+    Color color_white = {1.0, 1.0, 1.0, 0.0};
     v1 = createVector3f(-dis_center, 0.001, -dis_center);
     v2 = createVector3f(dis_center, 0.001, dis_center);
     drawBox(v1, v2, color_white);
 
     // Ground
-    struct Color color_green = {0.0, 0.2, 0.0};
+    Color color_green = {0.0, 0.2, 0.0, 0.0};
     v1 = createVector3f(-dis_center*2, 0.0, -dis_center*2);
     v2 = createVector3f(dis_center*2, 0.0, dis_center*2);
     drawBox(v1, v2, color_green);
 }
 
 void drawWalls(float dis_center, float thick, float height){
-    struct Vector3f v1;
-    struct Vector3f v2;
+    Vector3f v1;
+    Vector3f v2;
 
     // Back side
     v1 = createVector3f(-dis_center, 0, -dis_center-thick);
@@ -75,8 +75,8 @@ void drawWalls(float dis_center, float thick, float height){
 }
 
 void drawTowers(float dis_center, float radius){
-    struct Vector3f v;
-    struct Vector3f r = {270, 0, 0};
+    Vector3f v;
+    Vector3f r = {270, 0, 0};
     for (int i=-1;i<2;i+=2){
         for(int j=-1;j<2;j+=2){
             // Draw cylinders
@@ -91,8 +91,8 @@ void drawTowers(float dis_center, float radius){
 }
 
 void drawCenterTower(float width, float height){
-    struct Vector3f v1;
-    struct Vector3f v2;
+    Vector3f v1;
+    Vector3f v2;
 
     // Draw the building
     v1 = createVector3f(-width, 0, -width);
@@ -108,8 +108,8 @@ void drawCenterTower(float width, float height){
 }
 
 void drawGate(float dis_center, float thick, float width, float height){
-    struct Vector3f v1;
-    struct Vector3f v2;
+    Vector3f v1;
+    Vector3f v2;
 
     // Draw gate building
     v1 = createVector3f(dis_center-thick, 0, -width);

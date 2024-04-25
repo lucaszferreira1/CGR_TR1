@@ -5,7 +5,7 @@
 struct Particle{
     Vector3f pos, vel;
     Color col;
-    float lifetime;
+    float lifetime, size;
 };
 typedef Particle Particle;
 
