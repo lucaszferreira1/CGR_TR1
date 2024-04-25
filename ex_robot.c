@@ -129,14 +129,14 @@ void update(){
     res = eqRun(160, 75, 200);
     legs_rot[1][1].x = res;
 
-    res = eqRun(45, 135, 200);
+    res = eqRun(135, 45, 200);
     arms_rot[0][0].x = res;
-    res = eqRun(-90, 90, 200);
+    res = eqRun(90, -90, 200);
     arms_rot[0][1].x = res;
 
-    res = eqRun(135, 45, 200);
+    res = eqRun(45, 135, 200);
     arms_rot[1][0].x = res;
-    res = eqRun(90, -90, 200);
+    res = eqRun(-90, 90, 200);
     arms_rot[1][1].x = res;
 
     x++;
