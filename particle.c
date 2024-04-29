@@ -24,18 +24,15 @@ Color getRandomColor(Color col1, Color col2){
     return randomColor;
 }
 Vector3f getRandomPointInSphere(Vector3f pos, float radius) {
+    Vector3f randomPoint;
     float r = ((float)rand() / RAND_MAX) * radius; // Random radius within the sphere
     float theta = ((float)rand() / RAND_MAX) * 2 * PI; // Random angle theta (0 to 2*pi)
     float phi = ((float)rand() / RAND_MAX) * PI; // Random angle phi (0 to pi)
 
     // Convert spherical coordinates to Cartesian coordinates
-    float px = pos.x + r * sin(phi) * cos(theta);
-    float py = pos.y + r * sin(phi) * sin(theta);
-    float pz = pos.z + r * cos(phi);
-    Vector3f randomPoint;
-    randomPoint.x = px;
-    randomPoint.y = py;
-    randomPoint.z = pz;
+    randomPoint.x = pos.x + r * sin(phi) * cos(theta);
+    randomPoint.y = pos.y + r * sin(phi) * sin(theta);
+    randomPoint.z = pos.z + r * cos(phi);
 
     return randomPoint;
 }
