@@ -6,11 +6,12 @@
 #include <time.h>
 #define CENTER 8.0
 #define G 0.0003
-#define N_P 100
+#define N_P 1000
 
 // gcc ex_particle.c shapes.c particle.c -o particle -lGL -lGLU -lglut -lm
 // ./particle
 
+Color color_white = {1.0, 1.0, 1.0, 0.0};
 Color color_sky = {0.675, 0.843, 0.898, 0.0};
 Color color_red = {1.0, 0.0, 0.0, 0.0};
 Color color_orange = {1.0, 0.5, 0.0, 0.0};
@@ -28,10 +29,24 @@ void initRainParticles(Vector3f pos, float rad){
     for (int i=0;i<N_P;i++){
         Particle temp;
         temp.pos = getRandomPointInSphere(pos, rad);
-        temp.lifetime = rand() % 1000;
+        temp.lifetime = rand() % 100000;
         temp.col = getRandomColor(blue, light_blue);
-        temp.vel = createVector3f(0.0, 0.2, 0.0);
-        temp.size = 1;
+        temp.vel = createVector3f(0.0, -0.01, 0.0);
+        temp.size = 2;
+        ps[i] = temp;
+    }
+    particles = ps;
+}
+
+void initFireParticles(Vector3f pos){
+    Particle* ps = (Particle*)malloc(N_P * sizeof(Particle));
+    for (int i = 0; i < N_P; i++) {
+        Particle temp;
+        temp.pos = pos;
+        temp.lifetime = rand() % 100000;
+        temp.col = getRandomColor(color_red, color_orange);
+        temp.vel = (Vector3f){(rand() % 2001 - 1000) / 1000000.0f, (rand() % 1000) / 1000000.0f + 0.001f, (rand() % 2001 - 1000) / 1000000.0f};;
+        temp.size = 2;
         ps[i] = temp;
     }
     particles = ps;
@@ -43,16 +58,23 @@ void display() {
     gluLookAt((CENTER*2), (CENTER*2), (CENTER*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
     if (gen){
         // initParticles();
-        initRainParticles(createVector3f(0.0, 0.0, 0.0), 5);
+        // initRainParticles(createVector3f(0.0, 0.0, 0.0), 5);
+        initFireParticles(createVector3f(0.0, 0.0, 0.0));
+        
         gen = 0;
     }
-    Color white = {1.0, 1.0, 1.0, 0.0};
-    drawSphere(createVector3f(0.0, 0.0, 0.0), 5, 30, 30, white);
-    drawParticles(particles, N_P, G);
     
+    // drawSphere(createVector3f(0.0, 0.0, 0.0), 5, 30, 30, color_white);
+
+    drawParticles(particles, N_P, G);
+
+    glFlush();
     glutSwapBuffers(); // Use double buffering to avoid flickering
 }
 
+void update(){
+
+}
 
 void init() {
     srand(time(NULL));
@@ -83,6 +105,13 @@ void init() {
     glEnable(GL_LIGHT0); // Enable light source 0
 }
 
+void timer(int value) {
+    // Update the scene and trigger redrawing
+    update();
+    glutPostRedisplay();
+    glutTimerFunc(16, timer, 0); // Schedule the next update after 16 milliseconds (60 FPS)
+}
+
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
@@ -92,6 +121,7 @@ int main(int argc, char** argv) {
 
     init(); // Initialize OpenGL parameters
     glutIdleFunc(display);
+    glutTimerFunc(0, timer, 0); // Start the timer
     glutDisplayFunc(display); // Set the display callback function
     glutMainLoop(); // Enter the GLUT event processing loop
 
