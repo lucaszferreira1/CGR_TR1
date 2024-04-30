@@ -17,6 +17,8 @@ Particle createParticle(Vector3f pos, Vector3f vel, Color col, int lifetime, flo
 void updateParticle(Particle *p, float g);
 void drawParticle(Particle p);
 void drawParticles(Particle p[], int n_p, float g);
-Particle* generateParticles(int n, int vel_amp, Vector3f pos, Color col1, Color col2, int lifetime, float size);
+Particle* generateParticles(int n, int vel_amp, Vector3f pos, Color col1, Color col2, int lifetime, float size, float deltaTime);
+Particle* createImpostors(Particle* particles, int N_P, int nImp);
+void updateImpostors(Particle* particles, Particle* impostors, int N_P, int nImp);
 
 #endif

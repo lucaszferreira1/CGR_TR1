@@ -6,32 +6,36 @@
 #include <time.h>
 #define CENTER 8.0
 #define G 0.0003
-#define N_P 1000
+#define N_P 10000
 
 // gcc ex_particle.c shapes.c particle.c -o particle -lGL -lGLU -lglut -lm
 // ./particle
+
+float previousTime = 0.0f;
+float deltaTime = 0.0f;
 
 Color color_white = {1.0, 1.0, 1.0, 0.0};
 Color color_sky = {0.675, 0.843, 0.898, 0.0};
 Color color_red = {1.0, 0.0, 0.0, 0.0};
 Color color_orange = {1.0, 0.5, 0.0, 0.0};
+Color color_blue = {0.183, 0.336, 0.91, 0.5};
+Color color_lightblue = {0.2, 0.8, 1.0, 0.5};
 int gen = 1;
 Particle *particles;
+Particle *impostors;
 
-void initParticles(){
-    particles = generateParticles(N_P, 10, createVector3f(0.0, 0.0, 0.0), color_red, color_orange, 10000, 5);
+void initExplosionParticles(){
+    particles = generateParticles(N_P, 10, createVector3f(0.0, 0.0, 0.0), color_red, color_orange, 10000, 5, deltaTime);
 }
 
 void initRainParticles(Vector3f pos, float rad){
     Particle* ps = (Particle*)malloc(N_P * sizeof(Particle));
-    Color blue = {0.183, 0.336, 0.91, 0.5};
-    Color light_blue = {0.2, 0.8, 1.0, 0.5};
     for (int i=0;i<N_P;i++){
         Particle temp;
         temp.pos = getRandomPointInSphere(pos, rad);
         temp.lifetime = rand() % 100000;
-        temp.col = getRandomColor(blue, light_blue);
-        temp.vel = createVector3f(0.0, -0.01, 0.0);
+        temp.col = getRandomColor(color_blue, color_lightblue);
+        temp.vel = createVector3f(0.0, -0.001 * deltaTime, 0.0);
         temp.size = 2;
         ps[i] = temp;
     }
@@ -45,11 +49,41 @@ void initFireParticles(Vector3f pos){
         temp.pos = pos;
         temp.lifetime = rand() % 100000;
         temp.col = getRandomColor(color_red, color_orange);
-        temp.vel = (Vector3f){(rand() % 2001 - 1000) / 1000000.0f, (rand() % 1000) / 1000000.0f + 0.001f, (rand() % 2001 - 1000) / 1000000.0f};;
+        temp.vel = (Vector3f){(rand() % 2001 - 1000) / 1000000.0f * deltaTime, (rand() % 1000) / 1000000.0f + 0.001f * deltaTime, (rand() % 2001 - 1000) / 1000000.0f * deltaTime};
         temp.size = 2;
         ps[i] = temp;
     }
     particles = ps;
+}
+
+void initWaterfallParticles(Vector3f pos, float radius){
+    Particle* ps = (Particle*)malloc(N_P * sizeof(Particle));
+    for (int i = 0; i < N_P; i++) {
+        Particle temp;
+        temp.pos = pos;
+        temp.pos.x += ((float)rand() / RAND_MAX) * radius - radius;
+        temp.pos.z += ((float)rand() / RAND_MAX) * radius - radius;
+        temp.lifetime = rand() % 100000;
+        temp.col = getRandomColor(color_blue, color_lightblue);
+        temp.vel = (Vector3f){0.0, (rand() % 1000) / -1000000.0f * deltaTime, 0.0};
+        temp.size = 2;
+        ps[i] = temp;
+    }
+    particles = ps;
+}
+
+void useImpostors(int n){
+    updateImpostors(particles, impostors, N_P, n);
+    for (int i=0;i<N_P;i++)
+        updateParticle(&particles[i], G);
+}
+
+void createListImpostors(int n){
+    Particle* ims = (Particle*)malloc(n * sizeof(Particle));
+    ims = createImpostors(particles, N_P, n);
+    impostors = ims;
+    for (int i=0;i<N_P;i++)
+        updateParticle(&particles[i], G);
 }
 
 void display() {
@@ -57,23 +91,29 @@ void display() {
     glLoadIdentity();
     gluLookAt((CENTER*2), (CENTER*2), (CENTER*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
     if (gen){
-        // initParticles();
-        // initRainParticles(createVector3f(0.0, 0.0, 0.0), 5);
+        // initExplosionParticles();
+        // initRainParticles(createVector3f(0.0, 5.0, 0.0), 20);
         initFireParticles(createVector3f(0.0, 0.0, 0.0));
+        // initWaterfallParticles(createVector3f(0.0, 0.0, 0.0), 20);
         
+        createListImpostors(10);
+
         gen = 0;
     }
-    
-    // drawSphere(createVector3f(0.0, 0.0, 0.0), 5, 30, 30, color_white);
 
-    drawParticles(particles, N_P, G);
+    useImpostors(10);
+    drawParticles(impostors, N_P, G);
+    // drawParticles(particles, N_P, G);
 
     glFlush();
     glutSwapBuffers(); // Use double buffering to avoid flickering
 }
 
 void update(){
-
+    float currentTime = glutGet(GLUT_ELAPSED_TIME);
+    deltaTime = (currentTime - previousTime) / 1000.0f;
+    previousTime = currentTime;
+    glutPostRedisplay();
 }
 
 void init() {
