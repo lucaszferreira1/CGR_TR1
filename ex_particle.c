@@ -4,13 +4,15 @@
 #include <GL/glu.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdio.h>
 #define CENTER 8.0
 #define G 0.0003
-#define N_P 10000
+#define N_P 100000
 
 // gcc ex_particle.c shapes.c particle.c -o particle -lGL -lGLU -lglut -lm
 // ./particle
 
+unsigned int n_parti = N_P;
 float previousTime = 0.0f;
 float deltaTime = 0.0f;
 
@@ -20,12 +22,18 @@ Color color_red = {1.0, 0.0, 0.0, 0.0};
 Color color_orange = {1.0, 0.5, 0.0, 0.0};
 Color color_blue = {0.183, 0.336, 0.91, 0.5};
 Color color_lightblue = {0.2, 0.8, 1.0, 0.5};
+
 int gen = 1;
+
 Particle *particles;
 Particle *impostors;
 
 void initExplosionParticles(){
-    particles = generateParticles(N_P, 10, createVector3f(0.0, 0.0, 0.0), color_red, color_orange, 10000, 5, deltaTime);
+    particles = generateParticles(N_P, 1000, createVector3f(0.0, 0.0, 0.0), color_red, color_orange, 10000, 5, deltaTime);
+}
+
+void initSmokeParticles(){
+    particles = generateParticles(N_P, 5000, createVector3f(0.0, 0.0, 0.0), color_white, (Color){1.0, 1.0, 1.0, 1.0}, 10000, 5, deltaTime);
 }
 
 void initRainParticles(Vector3f pos, float rad){
@@ -35,7 +43,7 @@ void initRainParticles(Vector3f pos, float rad){
         temp.pos = getRandomPointInSphere(pos, rad);
         temp.lifetime = rand() % 100000;
         temp.col = getRandomColor(color_blue, color_lightblue);
-        temp.vel = createVector3f(0.0, -0.001 * deltaTime, 0.0);
+        temp.vel = createVector3f(0.0, -0.1 * deltaTime, 0.0);
         temp.size = 2;
         ps[i] = temp;
     }
@@ -49,8 +57,8 @@ void initFireParticles(Vector3f pos){
         temp.pos = pos;
         temp.lifetime = rand() % 100000;
         temp.col = getRandomColor(color_red, color_orange);
-        temp.vel = (Vector3f){(rand() % 2001 - 1000) / 1000000.0f * deltaTime, (rand() % 1000) / 1000000.0f + 0.001f * deltaTime, (rand() % 2001 - 1000) / 1000000.0f * deltaTime};
-        temp.size = 2;
+        temp.vel = (Vector3f){(rand() % 201 - 100) / 10000.0f * deltaTime, (rand() % 1000) / 100000.0f + 0.001f * deltaTime, (rand() % 2001 - 1000) / 10000.0f * deltaTime};
+        temp.size = 5;
         ps[i] = temp;
     }
     particles = ps;
@@ -65,23 +73,17 @@ void initWaterfallParticles(Vector3f pos, float radius){
         temp.pos.z += ((float)rand() / RAND_MAX) * radius - radius;
         temp.lifetime = rand() % 100000;
         temp.col = getRandomColor(color_blue, color_lightblue);
-        temp.vel = (Vector3f){0.0, (rand() % 1000) / -1000000.0f * deltaTime, 0.0};
+        temp.vel = (Vector3f){0.0, (rand() % 1000) / -1000.0f * deltaTime, 0.0};
         temp.size = 2;
         ps[i] = temp;
     }
     particles = ps;
 }
 
-void useImpostors(int n){
-    updateImpostors(particles, impostors, N_P, n);
-    for (int i=0;i<N_P;i++)
-        updateParticle(&particles[i], G);
-}
-
 void createListImpostors(int n){
-    Particle* ims = (Particle*)malloc(n * sizeof(Particle));
-    ims = createImpostors(particles, N_P, n);
-    impostors = ims;
+    Particle* ims = (Particle*)malloc(n_parti * sizeof(Particle));
+    ims = createImpostors(particles, N_P, n, n_parti);
+    particles = ims;
     for (int i=0;i<N_P;i++)
         updateParticle(&particles[i], G);
 }
@@ -92,8 +94,9 @@ void display() {
     gluLookAt((CENTER*2), (CENTER*2), (CENTER*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
     if (gen){
         // initExplosionParticles();
+        initSmokeParticles();
         // initRainParticles(createVector3f(0.0, 5.0, 0.0), 20);
-        initFireParticles(createVector3f(0.0, 0.0, 0.0));
+        // initFireParticles(createVector3f(0.0, -4.0, 0.0));
         // initWaterfallParticles(createVector3f(0.0, 0.0, 0.0), 20);
         
         createListImpostors(10);
@@ -101,9 +104,7 @@ void display() {
         gen = 0;
     }
 
-    useImpostors(10);
-    drawParticles(impostors, N_P, G);
-    // drawParticles(particles, N_P, G);
+    drawParticles(particles, n_parti, G);
 
     glFlush();
     glutSwapBuffers(); // Use double buffering to avoid flickering
@@ -114,6 +115,8 @@ void update(){
     deltaTime = (currentTime - previousTime) / 1000.0f;
     previousTime = currentTime;
     glutPostRedisplay();
+    system("clear");
+    printf("FPS: %f\n", 1 / deltaTime);
 }
 
 void init() {
@@ -149,7 +152,7 @@ void timer(int value) {
     // Update the scene and trigger redrawing
     update();
     glutPostRedisplay();
-    glutTimerFunc(16, timer, 0); // Schedule the next update after 16 milliseconds (60 FPS)
+    glutTimerFunc(15, timer, 0); // Schedule the next update after 16 milliseconds (60 FPS)
 }
 
 int main(int argc, char** argv) {
