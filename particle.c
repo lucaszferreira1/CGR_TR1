@@ -106,13 +106,14 @@ Particle* generateParticles(int n, int vel_amp, Vector3f pos, Color col1, Color 
     return particles;
 }
 
-Particle* createImpostors(Particle* particles, int N_P, int nImp){
-    Particle* impostors = (Particle*)malloc(N_P * sizeof(Particle));
+Particle* createImpostors(Particle* particles, int N_P, int nImp, int t){
+    Particle* impostors = (Particle*)malloc(t * sizeof(Particle));
     for (int i=0;i<(N_P / nImp); i++){
         Particle temp;
         Vector3f avgPos = {0.0, 0.0, 0.0};
         Vector3f avgVel = {0.0, 0.0, 0.0};
         Color clrAvg = {0.0, 0.0, 0.0};
+        float avgSize = 0;
         int avgLifetime = 0;
         for (int j=0;j<nImp;j++){
             avgPos.x += particles[i * nImp + j].pos.x;
@@ -126,6 +127,7 @@ Particle* createImpostors(Particle* particles, int N_P, int nImp){
             clrAvg.r += particles[i * nImp + j].col.r;
             clrAvg.g += particles[i * nImp + j].col.g;
             clrAvg.b += particles[i * nImp + j].col.b;
+            avgSize += particles[i * nImp + j].size;
             avgLifetime += particles[i * nImp + j].lifetime;
         }
 
@@ -140,58 +142,15 @@ Particle* createImpostors(Particle* particles, int N_P, int nImp){
         clrAvg.r /= nImp;
         clrAvg.g /= nImp;
         clrAvg.b /= nImp;
+        avgSize /= nImp;
         avgLifetime /= nImp;
         
         temp.pos = avgPos;
         temp.vel = avgVel;
         temp.col = clrAvg;
-        temp.size = nImp / 2;
+        temp.size = avgSize;
         temp.lifetime = avgLifetime;
         impostors[i] = temp;
     }
     return impostors;
-}
-
-void updateImpostors(Particle* particles, Particle* impostors, int N_P, int nImp){
-    for (int i=0;i<(N_P / nImp); i++){
-        Particle temp;
-        Vector3f avgPos = {0.0, 0.0, 0.0};
-        Vector3f avgVel = {0.0, 0.0, 0.0};
-        Color clrAvg = {0.0, 0.0, 0.0};
-        int avgLifetime = 0;
-        for (int j=0;j<nImp;j++){
-            avgPos.x += particles[i * nImp + j].pos.x;
-            avgPos.y += particles[i * nImp + j].pos.y;
-            avgPos.z += particles[i * nImp + j].pos.z;
-
-            avgVel.x += particles[i * nImp + j].vel.x;
-            avgVel.y += particles[i * nImp + j].vel.y;
-            avgVel.z += particles[i * nImp + j].vel.z;
-
-            clrAvg.r += particles[i * nImp + j].col.r;
-            clrAvg.g += particles[i * nImp + j].col.g;
-            clrAvg.b += particles[i * nImp + j].col.b;
-            avgLifetime += particles[i * nImp + j].lifetime;
-        }
-
-        avgPos.x /= nImp;
-        avgPos.y /= nImp;
-        avgPos.z /= nImp;
-        
-        avgVel.x /= nImp;
-        avgVel.y /= nImp;
-        avgVel.z /= nImp;
-        
-        clrAvg.r /= nImp;
-        clrAvg.g /= nImp;
-        clrAvg.b /= nImp;
-        avgLifetime /= nImp;
-        
-        temp.pos = avgPos;
-        temp.vel = avgVel;
-        temp.col = clrAvg;
-        temp.size = nImp / 2;
-        temp.lifetime = avgLifetime;
-        impostors[i] = temp;
-    }
 }
