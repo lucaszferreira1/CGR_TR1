@@ -140,6 +140,7 @@ void display() {
     gluLookAt((CENTER*2), (CENTER*2)+head_hei, (CENTER*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
 
     glPushMatrix();
+        glRotatef(globalRot.x, 1.0, 0.0, 0.0);
         glRotatef(globalRot.y, 0.0, 1.0, 0.0);
         drawHead(head_hei, head_rad);
         drawTorso(torso_hei, torso_rad, torso_len);
@@ -164,6 +165,23 @@ void update(){
     // noCicle();
     
     x++;
+}
+
+// Respond to arrow keys
+void SpecialKeys(int key, int x, int y){
+    if(key == GLUT_KEY_UP)
+        globalRot.x -= 2.0f;
+    if(key == GLUT_KEY_DOWN)
+        globalRot.x += 2.0f;
+    if(key == GLUT_KEY_LEFT)
+        globalRot.y -= 2.0f;
+    if(key == GLUT_KEY_RIGHT)
+        globalRot.y += 2.0f;
+                  
+    globalRot.y = (GLfloat)((const int)globalRot.y % 360);
+  
+    // Refresh the Window
+    glutPostRedisplay();
 }
 
 void init() {
@@ -220,6 +238,7 @@ int main(int argc, char** argv) {
 
     init(); // Initialize OpenGL parameters
     glutReshapeFunc(reshape);
+    glutSpecialFunc(SpecialKeys);
     glutTimerFunc(0, timer, 0); // Start the timer
     glutDisplayFunc(display); // Set the display callback function
     glutMainLoop(); // Enter the GLUT event processing loop
