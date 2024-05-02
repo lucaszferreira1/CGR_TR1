@@ -10,10 +10,12 @@
 // gcc ex_robot.c shapes.c -o robot -lGL -lGLU -lglut -lm
 // ./robot
 
+Vector3f globalRot = {0.0, 0.0, 0.0};
+
 Color skin_c = {1.0, 1.0, 1.0, 0.0};
 Color joint_c = {0.8, 0.8, 0.8, 0.0};
-Vector3f arms_rot[2][2] = {{{45.0, 0.0, 0.0}, {270.0, 0.0, 0.0}}, {{135.0, 0.0, 0.0}, {90.0, 0.0, 0.0}}};
-Vector3f legs_rot[2][2] = {{{75.0, 0.0, 0.0}, {75.0, 0.0, 0.0}}, {{105.0, 0.0, 0.0}, {160.0, 0.0, 0.0}}};
+Vector3f arms_rot[2][2] = {{{90.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, {{90.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}};
+Vector3f legs_rot[2][2] = {{{90.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, {{90.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}};
 
 int x = 0;
 
@@ -26,11 +28,50 @@ float eqRun(float min, float max, float period){
     return res;
 }
 
+void run(){
+    float res = eqRun(75, 105, 200);
+    legs_rot[0][0].x = res;
+    res = eqRun(0, 55, 200);
+    legs_rot[0][1].x = res;
+
+    res = eqRun(105, 75, 200);
+    legs_rot[1][0].x = res;
+    res = eqRun(55, 0, 200);
+    legs_rot[1][1].x = res;
+
+    res = eqRun(135, 45, 200);
+    arms_rot[0][0].x = res;
+    res = eqRun(-45, -90, 200);
+    arms_rot[0][1].x = res;
+
+    res = eqRun(45, 135, 200);
+    arms_rot[1][0].x = res;
+    res = eqRun(-90, -45, 200);
+    arms_rot[1][1].x = res;
+}
+
+void noCicle(){
+    
+}
+
 struct Limb{
     float length, radius;
     Vector3f v, r1, r2;
 };
 typedef struct Limb Limb;
+
+void drawUpperLimb(Vector3f v1, Vector3f r, float radius, float height, int slices, int stacks, Color c){
+    glColor3f(c.r, c.g, c.b);
+    
+    glTranslatef(v1.x, v1.y, v1.z);
+    glRotatef(r.x, 1, 0, 0);
+    glRotatef(r.y, 0, 1, 0);
+    glRotatef(r.z, 0, 0, 1);
+
+    GLUquadric* quad = gluNewQuadric();
+    gluCylinder(quad, radius, radius, height, slices, stacks);
+    gluDeleteQuadric(quad);
+}
 
 Limb createLimb(Vector3f v, Vector3f r1, Vector3f r2, float length, float radius){
     Limb l;
@@ -43,25 +84,23 @@ Limb createLimb(Vector3f v, Vector3f r1, Vector3f r2, float length, float radius
 }
 void drawLimb(Limb l){
     Vector3f v = l.v;
-    drawCylinder(v, l.r1, l.radius, l.length, 15, 15, skin_c);
     // Top Joint
     drawSphere(v, l.radius-0.01, 15, 15, joint_c);
 
-    // Calculate the position relative to the rotation of the upper arm
-    v.x += l.length * sin(radians(l.r1.y));
-    v.y -= l.length * cos(radians(l.r1.y)) * sin(radians(l.r1.x));
-    v.z += l.length * cos(radians(l.r1.y)) * cos(radians(l.r1.x));
+    glPushMatrix();
+    drawUpperLimb(v, l.r1, l.radius, l.length, 15, 15, skin_c);
 
-    drawCylinder(v, l.r2, l.radius, l.length, 15, 15, skin_c);
-    // Bottom Joint
+    v = (Vector3f){0.0, 0.0, l.length};
     drawSphere(v, l.radius-0.01, 15, 15, joint_c);
+    glPushMatrix();
+    drawUpperLimb(v, l.r2, l.radius, l.length, 15, 15, skin_c);
+    // Bottom Joint
+    
     
     // Hand / Feet
-    v.x += l.length * sin(radians(l.r2.y));
-    v.y -= l.length * cos(radians(l.r2.y)) * sin(radians(l.r2.x));
-    v.z += l.length * cos(radians(l.r2.y)) * cos(radians(l.r2.x));
-
     drawSphere(v, l.radius-0.01, 15, 15, joint_c);
+    glPopMatrix();
+    glPopMatrix();
 }
 
 void drawHead(float height, float radius){
@@ -100,45 +139,30 @@ void display() {
     glLoadIdentity();
     gluLookAt((CENTER*2), (CENTER*2)+head_hei, (CENTER*2), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); // Set the camera position and orientation
 
-    drawHead(head_hei, head_rad);
-    drawTorso(torso_hei, torso_rad, torso_len);
+    glPushMatrix();
+        glRotatef(globalRot.y, 0.0, 1.0, 0.0);
+        drawHead(head_hei, head_rad);
+        drawTorso(torso_hei, torso_rad, torso_len);
 
-    Limb rArm = createLimb(createVector3f(-3 * arm_rad, arm_hei, 0), arms_rot[0][0], arms_rot[0][1], arm_len, arm_rad);
-    Limb lArm = createLimb(createVector3f(3 * arm_rad, arm_hei, 0), arms_rot[1][0], arms_rot[1][1], arm_len, arm_rad);
+        Limb rArm = createLimb(createVector3f(-3 * arm_rad, arm_hei, 0), arms_rot[0][0], arms_rot[0][1], arm_len, arm_rad);
+        Limb lArm = createLimb(createVector3f(3 * arm_rad, arm_hei, 0), arms_rot[1][0], arms_rot[1][1], arm_len, arm_rad);
 
-    Limb rLeg = createLimb(createVector3f(-leg_rad, leg_hei, 0), legs_rot[0][0], legs_rot[0][1], leg_len, leg_rad);
-    Limb lLeg = createLimb(createVector3f(leg_rad, leg_hei, 0), legs_rot[1][0], legs_rot[1][1], leg_len, leg_rad);
+        Limb rLeg = createLimb(createVector3f(-leg_rad, leg_hei, 0), legs_rot[0][0], legs_rot[0][1], leg_len, leg_rad);
+        Limb lLeg = createLimb(createVector3f(leg_rad, leg_hei, 0), legs_rot[1][0], legs_rot[1][1], leg_len, leg_rad);
 
-    Limb limbs[] = {rArm, lArm, rLeg, lLeg};
-    
-    for (int i=0;i<4;i++)
-        drawLimb(limbs[i]);
-    
+        Limb limbs[] = {rArm, lArm, rLeg, lLeg};
+        
+        for (int i=0;i<4;i++)
+            drawLimb(limbs[i]);
+    glPopMatrix();
     glFlush();
     glutSwapBuffers(); // Use double buffering to avoid flickering
 }
 
 void update(){
-    float res = eqRun(75, 105, 200);
-    legs_rot[0][0].x = res;
-    res = eqRun(75, 160, 200);
-    legs_rot[0][1].x = res;
-
-    res = eqRun(105, 75, 200);
-    legs_rot[1][0].x = res;
-    res = eqRun(160, 75, 200);
-    legs_rot[1][1].x = res;
-
-    res = eqRun(135, 45, 200);
-    arms_rot[0][0].x = res;
-    res = eqRun(90, -90, 200);
-    arms_rot[0][1].x = res;
-
-    res = eqRun(45, 135, 200);
-    arms_rot[1][0].x = res;
-    res = eqRun(-90, 90, 200);
-    arms_rot[1][1].x = res;
-
+    run();
+    // noCicle();
+    
     x++;
 }
 
