@@ -177,7 +177,7 @@ void SpecialKeys(int key, int x, int y){
         globalRot.y -= 2.0f;
     if(key == GLUT_KEY_RIGHT)
         globalRot.y += 2.0f;
-                  
+    globalRot.x = (GLfloat)((const int)globalRot.x % 360);
     globalRot.y = (GLfloat)((const int)globalRot.y % 360);
   
     // Refresh the Window
