@@ -4,7 +4,7 @@
 
 #define WIDTH 1024
 #define HEIGHT 768
-#define FOV 1.05 // 60 graus
+#define FOV 1.05f // 60 graus
 
 // gcc main.c -o main -lm && ./main
 
@@ -69,7 +69,7 @@ Vector3f vec3f_invert(Vector3f v1){
 }
 
 float norm(Vector3f v1){
-    return sqrtf((v1.x*v1.x)+(v1.y*v1.y)+(v1.z*v1.z));
+    return sqrtf((v1.x*v1.x) + (v1.y*v1.y) + (v1.z*v1.z));
 }
 
 Vector3f normalized(Vector3f v1){
@@ -81,32 +81,24 @@ Vector3f normalized(Vector3f v1){
     return v1;
 }
 
-Vector3f vec3f_cross(Vector3f v1, Vector3f v2){
-    Vector3f res;
-    res.x = (v1.y * v2.z) - (v1.z * v2.y);
-    res.y = (v1.z * v2.x) - (v1.x * v2.z);
-    res.z = (v1.x * v2.y) - (v1.y * v2.x);
-    return res;
-}
-
-#define M_IVORY {1.0, 50.0, {0.9, 0.5, 0.1, 0.0}, {0.4, 0.4, 0.3}}
-#define M_GLASS {1.5, 125.0, {0.0, 0.9, 0.1, 0.8}, {0.6, 0.7, 0.8}}
-#define M_REDRUBBER {1.0, 10.0, {1.4, 3.0, 0.0, 0.0}, {0.3, 0.1, 0.1}}
-#define M_MIRROR {1.0, 1425.0, {0.0, 16.0, 0.8, 0.0}, {1.0, 1.0, 1.0}}
+#define M_IVORY {1.0f, 50.0f, {0.9f, 0.5f, 0.1f, 0.0f}, {0.4f, 0.4f, 0.3f}}
+#define M_GLASS {1.5f, 125.0f, {0.0f, 0.9f, 0.1f, 0.8f}, {0.6f, 0.7f, 0.8f}}
+#define M_REDRUBBER {1.0f, 10.0f, {1.4f, 3.0f, 0.0f, 0.0f}, {0.3f, 0.1f, 0.1f}}
+#define M_MIRROR {1.0f, 1425.0f, {0.0f, 16.0f, 0.8f, 0.0f}, {1.0f, 1.0f, 1.0f}}
 
 const int n_spheres = 4;
 const Sphere spheres[] = {
-    {{-3, 0, -16}, 2, M_IVORY},
-    {{-1, -1.5, -12}, 2, M_GLASS},
-    {{1.5, -0.5, -18}, 3, M_REDRUBBER},
-    {{7, 5, -18}, 4, M_MIRROR}
+    {{-3.0f, 0.0f, -16.0f}, 2, M_IVORY},
+    {{-1.0f, -1.5f, -12.0f}, 2, M_GLASS},
+    {{1.5f, -0.5f, -18.0f}, 3, M_REDRUBBER},
+    {{7.0f, 5.0f, -18.0f}, 4, M_MIRROR}
 };
 
 const int n_lights = 3;
 const Vector3f lights[] = {
-    {-20, 20, 20},
-    {30, 50, -25},
-    {30, 20, 30}
+    {-20.0f, 20.0f, 20.0f},
+    {30.0f, 50.0f, -25.0f},
+    {30.0f, 20.0f, 30.0f}
 };
 
 Vector3f reflect(Vector3f v1, Vector3f v2){
@@ -117,12 +109,12 @@ Vector3f reflect(Vector3f v1, Vector3f v2){
 
 Vector3f refract(Vector3f v1, Vector3f v2, float eta1, float eta2){
     float cosi = - fmaxf(-1.0f, fminf(1.0f, vec3f_sumMultiply(v1, v2)));
-    if (cosi < 0)
-        return refract(v1, vec3f_invert(v2), eta1, eta2);
-    float eta = eta1 / eta2;
-    float k = 1 - eta*eta*(1 - cosi*cosi);
-    if (k < 0)
-        return (Vector3f){1.0, 0.0, 0.0};
+    if (cosi < 0.0f)
+        return refract(v1, vec3f_invert(v2), eta2, eta1);
+    float eta = eta2 / eta1;
+    float k = 1.0f - eta*eta*(1.0f - cosi*cosi);
+    if (k < 0.0f)
+        return (Vector3f){1.0f, 0.0f, 0.0f};
     return vec3f_add(vec3f_multiplyVal(v1, eta), vec3f_multiplyVal(v2, eta*cosi-sqrtf(k)));
 }
 
@@ -132,30 +124,30 @@ SphereIntersect raySphereIntersection(Vector3f v1, Vector3f v2, Sphere s){
     float d2 = vec3f_sumMultiply(l, l) - tca*tca;
 
     if (d2 > s.rad*s.rad)
-        return (SphereIntersect){0, 0};
+        return (SphereIntersect){0, 0.0f};
     
     float thc = sqrtf(s.rad*s.rad - d2);
     float t0 = tca - thc;
     float t1 = tca + thc;
-    if (t0 > 0.001)
+    if (t0 > 0.001f)
         return (SphereIntersect){1, t0};
-    if (t1 > 0.001)
+    if (t1 > 0.001f)
         return (SphereIntersect){1, t1};
-    return (SphereIntersect){0, 0};
+    return (SphereIntersect){0, 0.0f};
 }
 
 SceneIntersect raySceneIntersect(Vector3f v1, Vector3f v2){
     Vector3f pt, N;
     Material material;
-    float nearest_dist = 1e10;
-    if (abs(v2.y) > 0.001){
-        float d = -(v1.y +  4) / v2.y;
+    float nearest_dist = 1e10f;
+    if (fabsf(v2.y) > 0.001f){
+        float d = -(v1.y +  4.0f) / v2.y;
         Vector3f p = vec3f_add(v1, vec3f_multiplyVal(v2, d));
-        if (d > 0.001 && d < nearest_dist && abs(p.x) < 10 && p.z < 10 && p.z > -30){
+        if (d > 0.001f && d < nearest_dist && fabsf(p.x) < 10.0f && p.z < -10.0f && p.z > -30.0f){
             nearest_dist = d;
             pt = p;
-            N = (Vector3f){0, 1, 0};
-            material.diff_color = ((int)(0.5 * pt.x + 1000) + (int)(0.5 * pt.z)) & 1 ? (Vector3f){0.3, 0.3, 0.3} : (Vector3f){0.3, 0.2, 0.1};
+            N = (Vector3f){0.0f, 1.0f, 0.0f};
+            material.diff_color = (((int)(0.5f * pt.x + 1000.0f) + (int)(0.5f * pt.z)) & 1) ? (Vector3f){0.3f, 0.3f, 0.3f} : (Vector3f){0.3f, 0.2f, 0.1f};
         }
     }
 
@@ -170,7 +162,7 @@ SceneIntersect raySceneIntersect(Vector3f v1, Vector3f v2){
         material = s.mat;
     }
     int v;
-    if (nearest_dist < 1000)
+    if (nearest_dist < 1000.0f)
         v = 1;
     else 
         v = 0;
@@ -180,15 +172,15 @@ SceneIntersect raySceneIntersect(Vector3f v1, Vector3f v2){
 Vector3f castRay(Vector3f v1, Vector3f v2, int depth){
     SceneIntersect si = raySceneIntersect(v1, v2);
     if (depth > 4 || !si.v)
-        return (Vector3f){0.2, 0.7, 0.8};
+        return (Vector3f){0.2f, 0.7f, 0.8f}; // Background Color
     
     Vector3f reflect_d = normalized(reflect(v2, si.v2));
     Vector3f refract_d = normalized(refract(v2, si.v2, si.mat.refr_i, 1.0f));
     Vector3f reflect_c = castRay(si.v1, reflect_d, depth+1);
     Vector3f refract_c = castRay(si.v1, refract_d, depth+1);
 
-    float diff_light_intens = 0.0;
-    float spec_light_intens = 0.0;
+    float diff_light_intens = 0.0f;
+    float spec_light_intens = 0.0f;
     for (int i=0;i<n_lights;i++){
         Vector3f light = lights[i];
         Vector3f light_d = normalized(vec3f_subtract(light, si.v1));
@@ -196,12 +188,12 @@ Vector3f castRay(Vector3f v1, Vector3f v2, int depth){
         if (shadow.v && (norm(vec3f_subtract(shadow.v1, si.v1))) < (norm(vec3f_subtract(light, si.v1))))
             continue;
         diff_light_intens += fmaxf(0.0f, vec3f_sumMultiply(light_d, si.v2));
-        spec_light_intens += powf(fmaxf(0.0f, -vec3f_sumMultiply(reflect(vec3f_invert(light_d), si.v2), v2)), si.mat.spec_exp);
+        spec_light_intens += powf(fmaxf(0.0f, vec3f_sumMultiply(vec3f_invert(reflect(vec3f_invert(light_d), si.v2)), v2)), si.mat.spec_exp);
     }
 
-    Vector3f color = {0.0, 0.0, 0.0};
-    color = vec3f_add(color, vec3f_multiplyVal(si.mat.diff_color, diff_light_intens * si.mat.albedo[0]));
-    color = vec3f_add(color, vec3f_multiplyVal((Vector3f){1.0, 1.0, 1.0}, spec_light_intens * si.mat.albedo[1]));
+    Vector3f color;
+    color = vec3f_multiplyVal(si.mat.diff_color, diff_light_intens * si.mat.albedo[0]);
+    color = vec3f_add(color, vec3f_multiplyVal((Vector3f){1.0f, 1.0f, 1.0f}, spec_light_intens * si.mat.albedo[1]));
     color = vec3f_add(color, vec3f_multiplyVal(reflect_c, si.mat.albedo[2]));
     color = vec3f_add(color, vec3f_multiplyVal(refract_c, si.mat.albedo[3]));
     return color;
@@ -212,10 +204,10 @@ int main(){
 #pragma omp parallel for
     for (int pix=0;pix<WIDTH*HEIGHT;pix++){
         Vector3f d;
-        d.x = (pix % WIDTH + 0.5) - WIDTH / 2;
-        d.y = -(pix / WIDTH + 0.5) + HEIGHT / 2;
-        d.z = -HEIGHT / (2.0 * tan(FOV / 2.0));
-        frameBuffer[pix] = castRay((Vector3f){0.0, 0.0, 0.0}, normalized(d), 0);
+        d.x = (pix % WIDTH + 0.5f) - WIDTH / 2.0f;
+        d.y = -(pix / WIDTH + 0.5f) + HEIGHT / 2.0f;
+        d.z = -HEIGHT / (2.0f * tan(FOV / 2.0f));
+        frameBuffer[pix] = castRay((Vector3f){0.0f, 0.0f, 0.0f}, normalized(d), 0);
     }
 
     FILE* f = fopen("./out.ppm", "wb");
