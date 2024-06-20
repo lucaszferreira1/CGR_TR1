@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -25,10 +26,20 @@ typedef struct sphere{
     Material mat;
 } Sphere;
 
+typedef struct triangle{
+    Vector3f v1, v2, v3;
+    Material mat;
+} Triangle;
+
 typedef struct sphere_intersect{
     int v;
     float r;
 } SphereIntersect;
+
+typedef struct trian_intersect{
+    int v;
+    float r;
+} TriangleIntersect;
 
 typedef struct scene_intersect{
     int v;
@@ -68,6 +79,14 @@ Vector3f vec3f_invert(Vector3f v1){
     return v1;
 }
 
+Vector3f vec3f_cross(Vector3f v1, Vector3f v2){
+    Vector3f r;
+    r.x = v1.y * v2.z - v1.z * v2.y;
+    r.y = v1.z * v2.x - v1.x * v2.z;
+    r.z = v1.x * v2.y - v1.y * v2.x;
+    return r;
+}
+
 float norm(Vector3f v1){
     return sqrtf((v1.x*v1.x) + (v1.y*v1.y) + (v1.z*v1.z));
 }
@@ -81,17 +100,30 @@ Vector3f normalized(Vector3f v1){
     return v1;
 }
 
+Vector3f triangle_normal(Triangle t){
+    Vector3f e1 = vec3f_subtract(t.v2, t.v1);
+    Vector3f e2 = vec3f_subtract(t.v3, t.v1);
+    return vec3f_cross(e1, e2);
+}
+
 #define M_IVORY {1.0f, 50.0f, {0.9f, 0.5f, 0.1f, 0.0f}, {0.4f, 0.4f, 0.3f}}
 #define M_GLASS {1.5f, 125.0f, {0.0f, 0.9f, 0.1f, 0.8f}, {0.6f, 0.7f, 0.8f}}
 #define M_REDRUBBER {1.0f, 10.0f, {1.4f, 3.0f, 0.0f, 0.0f}, {0.3f, 0.1f, 0.1f}}
 #define M_MIRROR {1.0f, 1425.0f, {0.0f, 16.0f, 0.8f, 0.0f}, {1.0f, 1.0f, 1.0f}}
+#define M_TESTE {1.0f, 10.0f, {0.9f, 1.0f, 0.1f, 0.0f}, {0.0f, 0.1f, 0.0f}}
 
-const int n_spheres = 4;
+const int n_spheres = 5;
 const Sphere spheres[] = {
-    {{-3.0f, 0.0f, -16.0f}, 2, M_IVORY},
+    {{-5.0f, 0.0f, -16.0f}, 2, M_IVORY},
     {{-1.0f, -1.5f, -12.0f}, 2, M_GLASS},
     {{1.5f, -0.5f, -18.0f}, 3, M_REDRUBBER},
-    {{7.0f, 5.0f, -18.0f}, 4, M_MIRROR}
+    {{7.0f, 5.0f, -18.0f}, 4, M_MIRROR},
+    {{0.0f, -25.0f, -12.0f}, 20, M_TESTE}
+};
+
+const int n_triangles = 1;
+const Triangle triangles[] = {
+    {{0.0f, 2.0f, -20.0f}, {-5.0f, 8.0f, -20.0f}, {-5.0f, 2.0f, -20.0f}, M_REDRUBBER},
 };
 
 const int n_lights = 3;
@@ -136,20 +168,37 @@ SphereIntersect raySphereIntersection(Vector3f v1, Vector3f v2, Sphere s){
     return (SphereIntersect){0, 0.0f};
 }
 
+TriangleIntersect rayTriangleIntersection(Vector3f v1, Vector3f v2, Triangle t){
+    float epsi = 1e-6;
+    Vector3f e1 = vec3f_subtract(t.v2, t.v1);
+    Vector3f e2 = vec3f_subtract(t.v3, t.v1);
+    Vector3f cross_e2 = vec3f_cross(v2, e2);
+    float det = vec3f_sumMultiply(e1, cross_e2);
+    if (det > -epsi && det < epsi)
+        return (TriangleIntersect){0, 0.0f};
+
+    float inv_det = 1.0f / det;
+    Vector3f s = vec3f_subtract(v1, t.v1);
+    float u = inv_det * vec3f_sumMultiply(s, cross_e2);
+    if (u < 0.0f || u > 1.0f)
+        return (TriangleIntersect){0, 0.0f};
+    
+    Vector3f q = vec3f_cross(s, e1);
+    float v = inv_det * vec3f_sumMultiply(v2, q);
+    if (v < 0.0f || u + v > 1.0f)
+        return (TriangleIntersect){0, 0.0f};
+    
+    float d = inv_det * vec3f_sumMultiply(e2, q);
+    if (d > epsi)
+        return (TriangleIntersect){1, d};
+    return (TriangleIntersect){0, 0.0f};
+}
+
 SceneIntersect raySceneIntersect(Vector3f v1, Vector3f v2){
+    int h=0;
     Vector3f pt, N;
     Material material;
     float nearest_dist = 1e10f;
-    if (fabsf(v2.y) > 0.001f){
-        float d = -(v1.y +  4.0f) / v2.y;
-        Vector3f p = vec3f_add(v1, vec3f_multiplyVal(v2, d));
-        if (d > 0.001f && d < nearest_dist && fabsf(p.x) < 10.0f && p.z < -10.0f && p.z > -30.0f){
-            nearest_dist = d;
-            pt = p;
-            N = (Vector3f){0.0f, 1.0f, 0.0f};
-            material.diff_color = (((int)(0.5f * pt.x + 1000.0f) + (int)(0.5f * pt.z)) & 1) ? (Vector3f){0.3f, 0.3f, 0.3f} : (Vector3f){0.3f, 0.2f, 0.1f};
-        }
-    }
 
     for (int i=0;i<n_spheres;i++){
         Sphere s = spheres[i];
@@ -160,6 +209,19 @@ SceneIntersect raySceneIntersect(Vector3f v1, Vector3f v2){
         pt = vec3f_add(v1, vec3f_multiplyVal(v2, nearest_dist));
         N = normalized(vec3f_subtract(pt, s.center));
         material = s.mat;
+        h = 1;
+    }
+    if (!h){
+        for (int i=0;i<n_triangles;i++){
+            Triangle t = triangles[i];
+            TriangleIntersect triangle_inters = rayTriangleIntersection(v1, v2, t);
+            if (!triangle_inters.v || triangle_inters.r > nearest_dist)
+                continue;
+            nearest_dist = triangle_inters.r;
+            pt = vec3f_add(v1, vec3f_multiplyVal(v2, nearest_dist));
+            N = normalized(triangle_normal(t));
+            material = t.mat;
+        }
     }
     int v;
     if (nearest_dist < 1000.0f)
