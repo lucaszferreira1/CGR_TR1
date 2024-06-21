@@ -87,6 +87,10 @@ Vector3f vec3f_cross(Vector3f v1, Vector3f v2){
     return r;
 }
 
+void vec3f_print(Vector3f v){
+    printf("%f %f %f\n", v.x, v.y, v.z);
+}
+
 float norm(Vector3f v1){
     return sqrtf((v1.x*v1.x) + (v1.y*v1.y) + (v1.z*v1.z));
 }
@@ -121,9 +125,10 @@ const Sphere spheres[] = {
     {{0.0f, -25.0f, -12.0f}, 20, M_TESTE}
 };
 
-const int n_triangles = 1;
+const int n_triangles = 2;
 const Triangle triangles[] = {
-    {{0.0f, 2.0f, -20.0f}, {-5.0f, 8.0f, -20.0f}, {-5.0f, 2.0f, -20.0f}, M_REDRUBBER},
+    {{0.0f, 2.0f, -24.0f}, {0.0f, 8.0f, -16.0f}, {-5.0f, 2.0f, -24.0f}, M_MIRROR},
+    {{-5.0f, 2.0f, -24.0f}, {-5.0f, 8.0f, -16.0f}, {-0.0f, 8.0f, -16.0f}, M_MIRROR},
 };
 
 const int n_lights = 3;
@@ -169,12 +174,11 @@ SphereIntersect raySphereIntersection(Vector3f v1, Vector3f v2, Sphere s){
 }
 
 TriangleIntersect rayTriangleIntersection(Vector3f v1, Vector3f v2, Triangle t){
-    float epsi = 1e-6;
     Vector3f e1 = vec3f_subtract(t.v2, t.v1);
     Vector3f e2 = vec3f_subtract(t.v3, t.v1);
     Vector3f cross_e2 = vec3f_cross(v2, e2);
     float det = vec3f_sumMultiply(e1, cross_e2);
-    if (det > -epsi && det < epsi)
+    if (det > -0.001f && det < 0.001f)
         return (TriangleIntersect){0, 0.0f};
 
     float inv_det = 1.0f / det;
@@ -189,7 +193,7 @@ TriangleIntersect rayTriangleIntersection(Vector3f v1, Vector3f v2, Triangle t){
         return (TriangleIntersect){0, 0.0f};
     
     float d = inv_det * vec3f_sumMultiply(e2, q);
-    if (d > epsi)
+    if (d > 0.001f)
         return (TriangleIntersect){1, d};
     return (TriangleIntersect){0, 0.0f};
 }
@@ -211,17 +215,15 @@ SceneIntersect raySceneIntersect(Vector3f v1, Vector3f v2){
         material = s.mat;
         h = 1;
     }
-    if (!h){
-        for (int i=0;i<n_triangles;i++){
-            Triangle t = triangles[i];
-            TriangleIntersect triangle_inters = rayTriangleIntersection(v1, v2, t);
-            if (!triangle_inters.v || triangle_inters.r > nearest_dist)
-                continue;
-            nearest_dist = triangle_inters.r;
-            pt = vec3f_add(v1, vec3f_multiplyVal(v2, nearest_dist));
-            N = normalized(triangle_normal(t));
-            material = t.mat;
-        }
+    for (int i=0;i<n_triangles;i++){
+        Triangle t = triangles[i];
+        TriangleIntersect triangle_inters = rayTriangleIntersection(v1, v2, t);
+        if (!triangle_inters.v || triangle_inters.r > nearest_dist)
+            continue;
+        nearest_dist = triangle_inters.r;
+        pt = vec3f_add(v1, vec3f_multiplyVal(v2, nearest_dist));
+        N = normalized(triangle_normal(t));
+        material = t.mat;
     }
     int v;
     if (nearest_dist < 1000.0f)
@@ -258,6 +260,7 @@ Vector3f castRay(Vector3f v1, Vector3f v2, int depth){
     color = vec3f_add(color, vec3f_multiplyVal((Vector3f){1.0f, 1.0f, 1.0f}, spec_light_intens * si.mat.albedo[1]));
     color = vec3f_add(color, vec3f_multiplyVal(reflect_c, si.mat.albedo[2]));
     color = vec3f_add(color, vec3f_multiplyVal(refract_c, si.mat.albedo[3]));
+
     return color;
 }
 
